@@ -4,7 +4,25 @@ param(
     [switch]$Force
 )
 
+$ErrorActionPreference = "Stop"
 $resolvedOutput = New-Item -ItemType Directory -Force -Path $OutputDir
+$openSslCommand = Get-Command openssl -ErrorAction SilentlyContinue
+
+if ($null -eq $openSslCommand) {
+    throw "OpenSSL was not found in PATH. Install OpenSSL or add it to PATH before running this script."
+}
+
+function Invoke-OpenSsl {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
+
+    & $openSslCommand.Source @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "OpenSSL command failed: openssl $($Arguments -join ' ')"
+    }
+}
 
 function New-KeyPair {
     param([string]$BaseName)
@@ -17,13 +35,20 @@ function New-KeyPair {
         return
     }
 
-    $rsa = [System.Security.Cryptography.RSA]::Create(2048)
     try {
-        [System.IO.File]::WriteAllText($privateKeyPath, $rsa.ExportRSAPrivateKeyPem())
-        [System.IO.File]::WriteAllText($publicKeyPath, $rsa.ExportRSAPublicKeyPem())
+        Invoke-OpenSsl -Arguments @("genrsa", "-out", $privateKeyPath, "2048")
+        Invoke-OpenSsl -Arguments @("rsa", "-in", $privateKeyPath, "-pubout", "-out", $publicKeyPath)
     }
-    finally {
-        $rsa.Dispose()
+    catch {
+        if (Test-Path $privateKeyPath) {
+            Remove-Item -LiteralPath $privateKeyPath -Force
+        }
+
+        if (Test-Path $publicKeyPath) {
+            Remove-Item -LiteralPath $publicKeyPath -Force
+        }
+
+        throw
     }
 }
 
