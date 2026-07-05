@@ -1,0 +1,2 @@
+powershell -ExecutionPolicy Bypass -File .\scripts\generate-keys.ps1
+docker compose -f .\docker\docker-compose.yml up --build postgres notification-service ingestion-service reports-service consensus-worker ingress

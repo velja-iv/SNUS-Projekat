@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reports-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reports-service
+  template:
+    metadata:
+      labels:
+        app: reports-service
+    spec:
+      containers:
+        - name: reports-service
+          image: measurementcollector/reports-service:latest
+          ports:
+            - containerPort: 8083
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:8083
+            - name: ConnectionStrings__SensorSystem
+              value: Host=postgres;Port=5432;Database=sensorsystem;Username=postgres;Password=postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reports-service
+spec:
+  selector:
+    app: reports-service
+  ports:
+    - port: 8083
+      targetPort: 8083

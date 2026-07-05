@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingress-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress-service
+  template:
+    metadata:
+      labels:
+        app: ingress-service
+    spec:
+      containers:
+        - name: ingress-service
+          image: measurementcollector/ingress:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:8080
+            - name: ReverseProxy__Clusters__ingestion-cluster__Destinations__destination1__Address
+              value: http://ingestion-service:8081/
+            - name: ReverseProxy__Clusters__reports-cluster__Destinations__destination1__Address
+              value: http://reports-service:8083/
+            - name: ReverseProxy__Clusters__notification-cluster__Destinations__destination1__Address
+              value: http://notification-service:8082/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-service
+spec:
+  selector:
+    app: ingress-service
+  ports:
+    - port: 8080
+      targetPort: 8080

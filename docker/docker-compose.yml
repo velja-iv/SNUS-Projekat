@@ -1,0 +1,120 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: sensor-postgres
+    environment:
+      POSTGRES_DB: sensorsystem
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  notification-service:
+    build:
+      context: ..
+      dockerfile: src/NotificationService/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8082
+    ports:
+      - "8082:8082"
+
+  ingestion-service:
+    build:
+      context: ..
+      dockerfile: src/IngestionService/Dockerfile
+    depends_on:
+      - postgres
+      - notification-service
+    environment:
+      ASPNETCORE_URLS: http://+:8081
+      ConnectionStrings__SensorSystem: Host=postgres;Port=5432;Database=sensorsystem;Username=postgres;Password=postgres
+      NotificationService__BaseUrl: http://notification-service:8082
+      Crypto__ServerPrivateKeyPath: /app/keys/server-private.pem
+      Crypto__ServerPublicKeyPath: /app/keys/server-public.pem
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./keys:/app/keys
+
+  reports-service:
+    build:
+      context: ..
+      dockerfile: src/ReportsService/Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      ASPNETCORE_URLS: http://+:8083
+      ConnectionStrings__SensorSystem: Host=postgres;Port=5432;Database=sensorsystem;Username=postgres;Password=postgres
+    ports:
+      - "8083:8083"
+
+  consensus-worker:
+    build:
+      context: ..
+      dockerfile: src/ConsensusWorker/Dockerfile
+    depends_on:
+      - postgres
+      - ingestion-service
+    environment:
+      ASPNETCORE_URLS: http://+:8084
+      ConnectionStrings__SensorSystem: Host=postgres;Port=5432;Database=sensorsystem;Username=postgres;Password=postgres
+      Services__IngestionBaseUrl: http://ingress:8080
+
+  ingress:
+    build:
+      context: ..
+      dockerfile: src/Ingress/Dockerfile
+    depends_on:
+      - ingestion-service
+      - reports-service
+      - notification-service
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ReverseProxy__Clusters__ingestion-cluster__Destinations__destination1__Address: http://ingestion-service:8081/
+      ReverseProxy__Clusters__reports-cluster__Destinations__destination1__Address: http://reports-service:8083/
+      ReverseProxy__Clusters__notification-cluster__Destinations__destination1__Address: http://notification-service:8082/
+    ports:
+      - "8080:8080"
+
+  sensor-01:
+    <<: &sensor-template
+      build:
+        context: ..
+        dockerfile: src/SensorClient/Dockerfile
+      depends_on:
+        - ingress
+        - notification-service
+      volumes:
+        - ./sensor-configs:/app/config
+        - ./keys:/app/keys
+      environment:
+        SENSOR_CONFIG_PATH: /app/config/sensor-01.json
+  sensor-02:
+    <<: *sensor-template
+    environment:
+      SENSOR_CONFIG_PATH: /app/config/sensor-02.json
+  sensor-03:
+    <<: *sensor-template
+    environment:
+      SENSOR_CONFIG_PATH: /app/config/sensor-03.json
+  sensor-04:
+    <<: *sensor-template
+    environment:
+      SENSOR_CONFIG_PATH: /app/config/sensor-04.json
+  sensor-05:
+    <<: *sensor-template
+    environment:
+      SENSOR_CONFIG_PATH: /app/config/sensor-05.json
+  sensor-06:
+    <<: *sensor-template
+    environment:
+      SENSOR_CONFIG_PATH: /app/config/sensor-06.json
+  sensor-07:
+    <<: *sensor-template
+    environment:
+      SENSOR_CONFIG_PATH: /app/config/sensor-07.json
+
+volumes:
+  postgres-data:

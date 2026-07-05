@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sensor-client-configs
+data:
+  sensor-01.json: |
+    {
+      "SensorId": "sensor-01",
+      "InitialDataQuality": "GOOD",
+      "TemperatureGeneration": { "Min": 60.0, "Max": 80.0 },
+      "AlarmThresholds": {
+        "Priority1Low": 50.0, "Priority1High": 90.0,
+        "Priority2Low": 40.0, "Priority2High": 100.0,
+        "Priority3Low": 30.0, "Priority3High": 110.0
+      },
+      "Mode": "Normal",
+      "Server": {
+        "IngressBaseUrl": "http://ingress-service:8080",
+        "NotificationHubUrl": "http://notification-service:8082/hubs/sensors"
+      },
+      "Crypto": {
+        "SensorPrivateKeyPath": "/app/keys/sensor-01-private.pem",
+        "SensorPublicKeyPath": "/app/keys/sensor-01-public.pem",
+        "ServerPublicKeyPath": "/app/keys/server-public.pem"
+      }
+    }
+  sensor-06.json: |
+    {
+      "SensorId": "sensor-06",
+      "InitialDataQuality": "GOOD",
+      "TemperatureGeneration": { "Min": 58.0, "Max": 79.0 },
+      "AlarmThresholds": {
+        "Priority1Low": 50.0, "Priority1High": 90.0,
+        "Priority2Low": 40.0, "Priority2High": 100.0,
+        "Priority3Low": 30.0, "Priority3High": 110.0
+      },
+      "Mode": "Normal",
+      "Server": {
+        "IngressBaseUrl": "http://ingress-service:8080",
+        "NotificationHubUrl": "http://notification-service:8082/hubs/sensors"
+      },
+      "Crypto": {
+        "SensorPrivateKeyPath": "/app/keys/sensor-06-private.pem",
+        "SensorPublicKeyPath": "/app/keys/sensor-06-public.pem",
+        "ServerPublicKeyPath": "/app/keys/server-public.pem"
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sensor-01
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sensor-01
+  template:
+    metadata:
+      labels:
+        app: sensor-01
+    spec:
+      containers:
+        - name: sensor-client
+          image: measurementcollector/sensor-client:latest
+          env:
+            - name: SENSOR_CONFIG_PATH
+              value: /app/config/sensor-01.json
+          volumeMounts:
+            - name: sensor-configs
+              mountPath: /app/config/sensor-01.json
+              subPath: sensor-01.json
+            - name: sensor-crypto-keys
+              mountPath: /app/keys
+              readOnly: true
+      volumes:
+        - name: sensor-configs
+          configMap:
+            name: sensor-client-configs
+        - name: sensor-crypto-keys
+          secret:
+            secretName: sensor-crypto-keys
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sensor-06
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sensor-06
+  template:
+    metadata:
+      labels:
+        app: sensor-06
+    spec:
+      containers:
+        - name: sensor-client
+          image: measurementcollector/sensor-client:latest
+          env:
+            - name: SENSOR_CONFIG_PATH
+              value: /app/config/sensor-06.json
+          volumeMounts:
+            - name: sensor-configs
+              mountPath: /app/config/sensor-06.json
+              subPath: sensor-06.json
+            - name: sensor-crypto-keys
+              mountPath: /app/keys
+              readOnly: true
+      volumes:
+        - name: sensor-configs
+          configMap:
+            name: sensor-client-configs
+        - name: sensor-crypto-keys
+          secret:
+            secretName: sensor-crypto-keys

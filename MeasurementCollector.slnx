@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ConsensusWorker/ConsensusWorker.csproj" />
+    <Project Path="src/IngestionService/IngestionService.csproj" />
+    <Project Path="src/Ingress/Ingress.csproj" />
+    <Project Path="src/NotificationService/NotificationService.csproj" />
+    <Project Path="src/ReportsService/ReportsService.csproj" />
+    <Project Path="src/SensorClient/SensorClient.csproj" />
+    <Project Path="src/Shared/Shared.csproj" />
+  </Folder>
+</Solution>

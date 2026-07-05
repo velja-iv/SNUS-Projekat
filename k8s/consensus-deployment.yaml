@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consensus-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consensus-worker
+  template:
+    metadata:
+      labels:
+        app: consensus-worker
+    spec:
+      containers:
+        - name: consensus-worker
+          image: measurementcollector/consensus-worker:latest
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:8084
+            - name: ConnectionStrings__SensorSystem
+              value: Host=postgres;Port=5432;Database=sensorsystem;Username=postgres;Password=postgres
+            - name: Services__IngestionBaseUrl
+              value: http://ingress-service:8080

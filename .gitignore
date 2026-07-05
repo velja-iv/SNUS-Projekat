@@ -1,0 +1,43 @@
+# Build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+
+# Visual Studio and IDE state
+.vs/
+.vscode/
+.idea/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test and coverage artifacts
+TestResults/
+CoverageReport/
+coverage/
+*.coverage
+*.coveragexml
+
+# .NET publish and packaging outputs
+publish/
+artifacts/
+*.nupkg
+*.snupkg
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.cache
+
+# Generated crypto material for local Docker runs
+docker/keys/*
+!docker/keys/.gitkeep
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

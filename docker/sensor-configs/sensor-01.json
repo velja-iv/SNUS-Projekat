@@ -1,0 +1,26 @@
+{
+  "SensorId": "sensor-01",
+  "InitialDataQuality": "GOOD",
+  "TemperatureGeneration": {
+    "Min": 60.0,
+    "Max": 80.0
+  },
+  "AlarmThresholds": {
+    "Priority1Low": 50.0,
+    "Priority1High": 90.0,
+    "Priority2Low": 40.0,
+    "Priority2High": 100.0,
+    "Priority3Low": 30.0,
+    "Priority3High": 110.0
+  },
+  "Mode": "Normal",
+  "Server": {
+    "IngressBaseUrl": "http://ingress:8080",
+    "NotificationHubUrl": "http://notification-service:8082/hubs/sensors"
+  },
+  "Crypto": {
+    "SensorPrivateKeyPath": "/app/keys/sensor-01-private.pem",
+    "SensorPublicKeyPath": "/app/keys/sensor-01-public.pem",
+    "ServerPublicKeyPath": "/app/keys/server-public.pem"
+  }
+}

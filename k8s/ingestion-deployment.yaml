@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestion-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingestion-service
+  template:
+    metadata:
+      labels:
+        app: ingestion-service
+    spec:
+      containers:
+        - name: ingestion-service
+          image: measurementcollector/ingestion-service:latest
+          ports:
+            - containerPort: 8081
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:8081
+            - name: ConnectionStrings__SensorSystem
+              value: Host=postgres;Port=5432;Database=sensorsystem;Username=postgres;Password=postgres
+            - name: NotificationService__BaseUrl
+              value: http://notification-service:8082
+            - name: Crypto__ServerPrivateKeyPath
+              value: /app/keys/server-private.pem
+            - name: Crypto__ServerPublicKeyPath
+              value: /app/keys/server-public.pem
+          volumeMounts:
+            - name: sensor-crypto-keys
+              mountPath: /app/keys
+              readOnly: true
+      volumes:
+        - name: sensor-crypto-keys
+          secret:
+            secretName: sensor-crypto-keys
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingestion-service
+spec:
+  selector:
+    app: ingestion-service
+  ports:
+    - port: 8081
+      targetPort: 8081
