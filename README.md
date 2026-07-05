@@ -72,6 +72,16 @@ This repository implements a distributed sensor monitoring system in C# / .NET 1
    `8082` notification hub
    `8083` reports
 
+### Backend-only start for the server machine
+- PowerShell:
+  `powershell -ExecutionPolicy Bypass -File .\scripts\start-backend.ps1`
+- CMD:
+  `.\scripts\start-backend.bat`
+- Direct compose:
+  `docker compose -f .\docker\docker-compose.backend.yml up --build`
+- Prepare Linux client keys after generation:
+  `powershell -ExecutionPolicy Bypass -File .\scripts\prepare-linux-client-keys.ps1`
+
 ## 9. Kubernetes / Minikube run instructions
 1. Enable ingress:
    `minikube addons enable ingress`
@@ -95,6 +105,11 @@ This repository implements a distributed sensor monitoring system in C# / .NET 1
   - `IngressBaseUrl = http://192.168.1.20:8080`
   - `NotificationHubUrl = http://192.168.1.20:8082/hubs/sensors`
 - Do not use `localhost` across computers
+- The repository includes:
+  - `docker/docker-compose.backend.yml` for the server machine
+  - `linux-client/configs/` as Linux client templates
+  - `scripts/generate-linux-client-configs.sh` to materialize client configs for a real server IP
+  - `scripts/start-sensor-linux.sh` to run one sensor interactively per terminal on Linux
 
 ## 11. Sensor console commands
 - `/dos`

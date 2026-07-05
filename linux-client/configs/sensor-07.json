@@ -1,0 +1,26 @@
+{
+  "SensorId": "sensor-07",
+  "InitialDataQuality": "UNCERTAIN",
+  "TemperatureGeneration": {
+    "Min": 63.0,
+    "Max": 83.0
+  },
+  "AlarmThresholds": {
+    "Priority1Low": 50.0,
+    "Priority1High": 90.0,
+    "Priority2Low": 40.0,
+    "Priority2High": 100.0,
+    "Priority3Low": 30.0,
+    "Priority3High": 110.0
+  },
+  "Mode": "Normal",
+  "Server": {
+    "IngressBaseUrl": "http://__SERVER_IP__:8080",
+    "NotificationHubUrl": "http://__SERVER_IP__:8082/hubs/sensors"
+  },
+  "Crypto": {
+    "SensorPrivateKeyPath": "linux-client/keys/sensor-07-private.pem",
+    "SensorPublicKeyPath": "linux-client/keys/sensor-07-public.pem",
+    "ServerPublicKeyPath": "linux-client/keys/server-public.pem"
+  }
+}

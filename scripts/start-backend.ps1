@@ -1,2 +1,16 @@
+param(
+    [switch]$NoBuild
+)
+
+$ErrorActionPreference = "Stop"
+$projectRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+
+Set-Location $projectRoot
 powershell -ExecutionPolicy Bypass -File .\scripts\generate-keys.ps1
-docker compose -f .\docker\docker-compose.yml up --build postgres notification-service ingestion-service reports-service consensus-worker ingress
+
+$composeArgs = @("-f", ".\docker\docker-compose.backend.yml", "up")
+if (-not $NoBuild) {
+    $composeArgs += "--build"
+}
+
+docker compose @composeArgs
